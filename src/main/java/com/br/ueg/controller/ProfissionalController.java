@@ -26,39 +26,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 @CrossOrigin(origins = "*")
 public class ProfissionalController {
 
+    // Injeta o repositório para manipular os dados da entidade Profissional.
     @Autowired
     private ProfissionalRepository profissionalRepository;
 
+    // Endpoint GET que retorna todos os profissionais ordenados pelo nome.
     @GetMapping("/profissional")
     public List<Profissional> getAllProfissionais () {
         return profissionalRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
     
+    // Endpoint GET que busca um profissional pelo id informado na URL.
+    // Lança ResourceNotFoundException quando o registro não é encontrado.
     @GetMapping("/profissional/{id}")
     public Profissional getProfissionalById(@PathVariable Long id) {
         return profissionalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Profissional não encontrado com id: " + id));
     }
 
+    // Endpoint POST que cria um novo profissional com os dados recebidos no corpo da requisição.
+    // Retorna HTTP 201 (Created) com o objeto persistido.
     @PostMapping("/profissional")
     public ResponseEntity<Profissional> createProfissional(@RequestBody Profissional profissional) {
         Profissional savedProfissional = profissionalRepository.save(profissional);
         return ResponseEntity.status(201).body(savedProfissional);
     }
 
+    // Endpoint DELETE que remove um profissional pelo id após validar se ele existe.
     @DeleteMapping("/profissional/{id}")
     public ResponseEntity<Void> deleteProfissional(@PathVariable Long id) {
         Profissional profissional = profissionalRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Profissional não encontrado com id: " + id));
         
         profissionalRepository.delete(profissional);
+        // Retorna HTTP 204 (No Content) para indicar exclusão sem corpo na resposta.
         return ResponseEntity.noContent().build();
     }
 
+    // Endpoint PUT que atualiza os dados de um profissional existente.
+    // Busca o registro atual, aplica os novos valores e salva novamente no banco.
     @PutMapping("/profissional/{id}")
     public ResponseEntity<Profissional> updateProfissional(@PathVariable Long id, @RequestBody Profissional profissionalDetails) {
         Profissional profissional = profissionalRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Profissional não encontrado com id: " + id));
 
+        // Atualiza os campos da entidade com os valores enviados na requisição.
         profissional.setNome(profissionalDetails.getNome());
         profissional.setDataAdmissao(profissionalDetails.getDataAdmissao());
         profissional.setIsVideomaker(profissionalDetails.getIsVideomaker());
@@ -66,6 +77,7 @@ public class ProfissionalController {
         profissional.setEventos(profissionalDetails.getEventos());
 
         Profissional updatedProfissional = profissionalRepository.save(profissional);
+        // Retorna HTTP 200 (OK) com o profissional atualizado.
         return ResponseEntity.ok(updatedProfissional);
     }
 
